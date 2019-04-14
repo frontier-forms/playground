@@ -185,13 +185,19 @@ storiesOf('Button', module)
                 <h2>Create a todo</h2>
                 <p>
                   <label htmlFor="name">Name*</label> <br />
-                  <input type="text" name="name" value={state.todo.name.value} onChange={e => modifiers.todo.name.change(e.currentTarget.value)} />
+                  <input
+                    type="text"
+                    name="name"
+                    value={state.values.todo.name} onChange={e => modifiers.todo.name.change(e.currentTarget.value.length > 0 ? e.currentTarget.value : null)}
+                  />
                   <p>
-                    Value: "{state.todo.name.value}"
+                    Value: "{state.values.todo.name}"
                   </p>
-                  <p>
-                    Error: "{state.todo.name.error}"
+                  {state.errors.todo && state.errors.todo.name &&
+                    <p>
+                      Error: "{state.errors.todo.name}"
                   </p>
+                  }
                 </p>
                 <p>
                   <input type="submit" value="Save" />
