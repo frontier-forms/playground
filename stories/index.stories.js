@@ -1,17 +1,13 @@
 import React from 'react';
 import gql from "graphql-tag";
 import { Frontier } from "frontier-forms";
-
 import { storiesOf } from '@storybook/react';
-import { action } from '@storybook/addon-actions';
-import { linkTo } from '@storybook/addon-links';
+import ApolloClient from 'apollo-client';
+import { InMemoryCache } from 'apollo-cache-inmemory';
+import { createHttpLink } from 'apollo-link-http';
 
-import { Button, Welcome } from '@storybook/react/demo';
-
-storiesOf('Welcome', module).add('to Storybook', () => <Welcome showApp={linkTo('Button')} />);
-
-storiesOf('Button', module)
-  .add('Basic form', () => {
+storiesOf('<Frontier>', module)
+  .add('with a static schema using `schema` props', () => {
     const schema = {
       "$schema": "http://json-schema.org/draft-06/schema#",
       "properties": {
@@ -196,6 +192,57 @@ storiesOf('Button', module)
                   {state.errors.todo && state.errors.todo.name &&
                     <p>
                       Error: "{state.errors.todo.name}"
+                  </p>
+                  }
+                </p>
+                <p>
+                  <input type="submit" value="Save" />
+                </p>
+              </form>
+            )
+          }
+        }
+      </Frontier>
+    )
+  }).
+  add('with a dynamic schema using `client` props', () => {
+    const mutation = gql`
+      mutation ($name: String!) {
+        createCat(name: $name) {
+          id
+          name
+        }
+      }
+    `;
+
+    // https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg
+    const client = new ApolloClient({
+      link: createHttpLink({ uri: 'https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg' }),
+      cache: new InMemoryCache()
+    });
+
+    return (
+      <Frontier mutation={mutation} client={client} initialValues={{ name: 'My cat' }}>
+        {
+          ({ state, modifiers, form }) => {
+            console.log(state);
+            console.log(modifiers);
+            return (
+              <form /* onSubmit={modifiers.save} */>
+                <h2>Create a cat</h2>
+                <p>
+                  <label htmlFor="name">Name*</label> <br />
+                  <input
+                    type="text"
+                    name="name"
+                    value={state.values.name} onChange={e => modifiers.name.change(e.currentTarget.value.length > 0 ? e.currentTarget.value : null)}
+                  />
+                  <p>
+                    Value: "{state.values.name}"
+                  </p>
+                  {state.errors.cat && state.errors.name &&
+                    <p>
+                      Error: "{state.errors.name}"
                   </p>
                   }
                 </p>
