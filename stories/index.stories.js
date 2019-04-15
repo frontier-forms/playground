@@ -225,12 +225,12 @@ storiesOf('<Frontier>', module)
       <Frontier mutation={mutation} client={client} initialValues={{ name: 'My cat' }}>
         {
           ({ state, modifiers, form }) => {
-            console.log(state);
-            console.log(modifiers);
+            console.log('state', JSON.stringify(state));
+            console.log('modifiers', JSON.stringify(modifiers));
             return (
-              <form /* onSubmit={modifiers.save} */>
+              <form onSubmit={(e) => { e.preventDefault(); form.submit(); }}>
                 <h2>Create a cat</h2>
-                <p>
+                <div>
                   <label htmlFor="name">Name*</label> <br />
                   <input
                     type="text"
@@ -240,12 +240,13 @@ storiesOf('<Frontier>', module)
                   <p>
                     Value: "{state.values.name}"
                   </p>
-                  {state.errors.cat && state.errors.name &&
+                  {state.errors.name &&
                     <p>
                       Error: "{state.errors.name}"
                   </p>
                   }
-                </p>
+                </div>
+                <br />
                 <p>
                   <input type="submit" value="Save" />
                 </p>
