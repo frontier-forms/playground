@@ -1,10 +1,13 @@
+import 'semantic-ui-css/semantic.min.css'
+
 import React from 'react';
 import gql from "graphql-tag";
+import ApolloClient from 'apollo-client';
 import { Frontier } from "frontier-forms";
 import { storiesOf } from '@storybook/react';
-import ApolloClient from 'apollo-client';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { createHttpLink } from 'apollo-link-http';
+import { SemanticUIkit } from '@frontier-forms/ui-kit-semantic-ui';
 
 storiesOf('<Frontier>', module)
   .add('with a static schema using `schema` props', () => {
@@ -215,7 +218,6 @@ storiesOf('<Frontier>', module)
       }
     `;
 
-    // https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg
     const client = new ApolloClient({
       link: createHttpLink({ uri: 'https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg' }),
       cache: new InMemoryCache()
@@ -249,6 +251,46 @@ storiesOf('<Frontier>', module)
                 <br />
                 <p>
                   <input type="submit" value="Save" />
+                </p>
+              </form>
+            )
+          }
+        }
+      </Frontier>
+    )
+  }).
+  add('Semantic UI UI kit example', () => {
+    const mutation = gql`
+      mutation ($name: String!) {
+        createCat(name: $name) {
+          id
+          name
+        }
+      }
+    `;
+
+    // https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg
+    const client = new ApolloClient({
+      link: createHttpLink({ uri: 'https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg' }),
+      cache: new InMemoryCache()
+    });
+
+    return (
+      <Frontier mutation={mutation} client={client} uiKit={SemanticUIkit} initialValues={{ name: 'My cat' }}>
+        {
+          ({ state, modifiers, form, kit }) => {
+            console.log('state', JSON.stringify(state));
+            console.log('kit', kit);
+            console.log('modifiers', modifiers);
+            return (
+              <form onSubmit={(e) => { e.preventDefault(); form.submit(); }}>
+                <h2>Create a cat</h2>
+                <div>
+                  {kit.name()}
+                </div>
+                <br />
+                <p>
+                  <input type="submit" value="Save" className="ui button" />
                 </p>
               </form>
             )
