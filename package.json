@@ -12,12 +12,12 @@
     "type": "git",
     "url": "git+https://github.com/frontier-forms/playground.git"
   },
-  "author": "",
+  "author": "Charly POLY <cpoly55@gmail.com>, Tom Chmelevskij <T.Chmelevskij@gmail.com>",
+  "homepage": "https://frontier-forms.dev",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/frontier-forms/playground/issues"
   },
-  "homepage": "https://github.com/frontier-forms/playground#readme",
   "dependencies": {
     "@frontier-forms/ui-kit-semantic-ui": "../frontier-forms-ui-kit-semantic-ui/",
     "apollo-cache-inmemory": "^1.5.1",
