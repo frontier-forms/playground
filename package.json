@@ -24,9 +24,11 @@
     "apollo-client": "^2.5.1",
     "apollo-link-http": "^1.5.14",
     "frontier-forms": "../frontier-forms",
+    "functional-json-schema": "^0.0.2-1",
     "graphql": "^14.2.1",
     "graphql-tag": "^2.10.1",
-    "semantic-ui-css": "^2.4.1"
+    "semantic-ui-css": "^2.4.1",
+    "semantic-ui-react": "^0.86.0"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",

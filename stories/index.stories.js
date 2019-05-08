@@ -8,212 +8,86 @@ import { storiesOf } from '@storybook/react';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { createHttpLink } from 'apollo-link-http';
 import { SemanticUIkit } from '@frontier-forms/ui-kit-semantic-ui';
+import { Message, Step } from 'semantic-ui-react';
 
-storiesOf('<Frontier>', module)
-  .add('with a static schema using `schema` props', () => {
-    const schema = {
-      "$schema": "http://json-schema.org/draft-06/schema#",
-      "properties": {
-        "Query": {
-          "type": "object",
-          "properties": {
-            "todo": {
-              "type": "object",
-              "properties": {
-                "return": {
-                  "$ref": "#/definitions/Todo"
-                },
-                "arguments": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "id"
-                  ]
-                }
-              },
-              "required": []
-            },
-            "todos": {
-              "type": "object",
-              "properties": {
-                "return": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/Todo"
-                  }
-                },
-                "arguments": {
-                  "type": "object",
-                  "properties": {},
-                  "required": []
-                }
-              },
-              "required": []
-            }
-          },
-          "required": []
-        },
-        "Mutation": {
-          "type": "object",
-          "properties": {
-            "update_todo": {
-              "type": "object",
-              "properties": {
-                "return": {
-                  "$ref": "#/definitions/Todo"
-                },
-                "arguments": {
-                  "type": "object",
-                  "properties": {
-                    "id": {
-                      "type": "string"
-                    },
-                    "todo": {
-                      "$ref": "#/definitions/TodoInputType"
-                    }
-                  },
-                  "required": [
-                    "id",
-                    "todo"
-                  ]
-                }
-              },
-              "required": []
-            },
-            "create_todo": {
-              "type": "object",
-              "properties": {
-                "return": {
-                  "$ref": "#/definitions/Todo"
-                },
-                "arguments": {
-                  "type": "object",
-                  "properties": {
-                    "todo": {
-                      "$ref": "#/definitions/TodoInputType"
-                    }
-                  },
-                  "required": [
-                    "todo"
-                  ]
-                }
-              },
-              "required": []
-            },
-            "update_online_status": {
-              "type": "object",
-              "properties": {
-                "return": {
-                  "$ref": "#/definitions/OnlineStatus"
-                },
-                "arguments": {}
-              },
-              "required": []
-            }
-          },
-          "required": []
-        }
-      },
-      "definitions": {
-        "Todo": {
-          "type": "object",
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "name": {
-              "type": "string"
-            },
-            "completed": {
-              "type": "boolean"
-            }
-          },
-          "required": [
-            "id",
-            "name"
-          ]
-        },
-        "TodoInputType": {
-          "type": "object",
-          "properties": {
-            "name": {
-              "type": "string"
-            },
-            "completed": {
-              "type": "boolean"
-            }
-          },
-          "required": [
-            "name"
-          ]
-        },
-        "OnlineStatus": {
-          "type": "object",
-          "properties": {
-            "onlineStatus": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "onlineStatus"
-          ]
+class MutationSelector extends React.Component {
+  state = { mutation: '' }
+
+  componentDidMount() {
+    this.setState({
+      mutation: Object.keys(this.props.mutations)[0]
+    });
+  }
+
+  onChange = (e) => {
+    this.setState({
+      mutation: e.currentTarget.value
+    });
+  }
+
+  render() {
+    return (
+      <div>
+        <br />
+        <select onChange={this.onChange}>
+          {
+            Object.keys(this.props.mutations).map(m => {
+              return (
+                <option value={m} key={m}>{m}</option>
+              )
+            })
+          }
+        </select>
+        <br />
+        <br />
+        <div style={{ paddingLeft: '50px' }}>
+          <div style={{ width: '300px' }}>
+            <Frontier client={this.props.client} mutation={this.props.mutations[this.state.mutation]} uiKit={this.props.uiKit} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+}
+
+storiesOf('React Europe 2019 demo', module)
+  .add('Simple forms example', () => {
+    const mutations = {
+      'createUser': gql`
+      mutation ($company: String!, $email: String!, $firstname: String!, $lastname: String!) {
+        createUser(company: $company, email: $email, firstname: $firstname, lastname: $lastname) {
+          id
         }
       }
+    `,
+      'createCat': gql`
+      mutation ($name: String!) {
+        createCat(name: $name) {
+          id
+          name
+        }
+      }
+    `
     };
 
-    const mutation = gql`
-        mutation createTodo($todo: TodoInputType!) {
-          create_todo(todo: $todo) {
-            id
-          }
-        }
-    `;
+    const client = new ApolloClient({
+      link: createHttpLink({ uri: 'https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg' }),
+      cache: new InMemoryCache()
+    });
 
     return (
-      <Frontier mutation={mutation} schema={schema} initialValues={{ todo: { name: 'Todo 1' } }}>
-        {
-          ({ state, modifiers, form }) => {
-            console.log(state);
-            console.log(modifiers);
-            return (
-              <form /* onSubmit={modifiers.save} */>
-                <h2>Create a todo</h2>
-                <p>
-                  <label htmlFor="name">Name*</label> <br />
-                  <input
-                    type="text"
-                    name="name"
-                    value={state.values.todo.name} onChange={e => modifiers.todo.name.change(e.currentTarget.value.length > 0 ? e.currentTarget.value : null)}
-                  />
-                  <p>
-                    Value: "{state.values.todo.name}"
-                  </p>
-                  {state.errors.todo && state.errors.todo.name &&
-                    <p>
-                      Error: "{state.errors.todo.name}"
-                  </p>
-                  }
-                </p>
-                <p>
-                  <input type="submit" value="Save" />
-                </p>
-              </form>
-            )
-          }
-        }
-      </Frontier>
-    )
-  }).
-  add('with a dynamic schema using `client` props', () => {
+      <div>
+        <h2>Create a Cat or a User</h2>
+        <MutationSelector mutations={mutations} client={client} uiKit={SemanticUIkit} />
+      </div>
+    );
+  })
+  .add('Simple User form with Semantic UI and render props', () => {
+
     const mutation = gql`
-      mutation ($name: String!) {
-        createCat(name: $name) {
+      mutation ($company: String!, $email: String!, $firstname: String!, $lastname: String!) {
+        createUser(company: $company, email: $email, firstname: $firstname, lastname: $lastname) {
           id
-          name
         }
       }
     `;
@@ -224,78 +98,407 @@ storiesOf('<Frontier>', module)
     });
 
     return (
-      <Frontier mutation={mutation} client={client} initialValues={{ name: 'My cat' }}>
-        {
-          ({ state, modifiers, form }) => {
-            console.log('state', JSON.stringify(state));
-            console.log('modifiers', JSON.stringify(modifiers));
-            return (
-              <form onSubmit={(e) => { e.preventDefault(); form.submit(); }}>
-                <h2>Create a cat</h2>
-                <div>
-                  <label htmlFor="name">Name*</label> <br />
-                  <input
-                    type="text"
-                    name="name"
-                    value={state.values.name} onChange={e => modifiers.name.change(e.currentTarget.value.length > 0 ? e.currentTarget.value : null)}
-                  />
-                  <p>
-                    Value: "{state.values.name}"
-                  </p>
-                  {state.errors.name &&
-                    <p>
-                      Error: "{state.errors.name}"
-                  </p>
-                  }
-                </div>
-                <br />
-                <p>
-                  <input type="submit" value="Save" />
-                </p>
-              </form>
-            )
-          }
-        }
-      </Frontier>
-    )
-  }).
-  add('Semantic UI UI kit example', () => {
+      <div>
+        <div style={{ paddingLeft: '50px' }}>
+          <div style={{ width: '445px' }}>
+            <Frontier client={client} mutation={mutation} uiKit={SemanticUIkit}>
+              {
+                ({ form, kit }) => {
+                  return (
+                    <form
+                      className={form.getState().submitting ? 'ui form loading' : 'ui form'}
+                      onSubmit={(e) => { e.preventDefault(); form.submit(); }}
+                    >
+                      <p>&nbsp;</p>
+                      <Step.Group ordered>
+                        <Step active>
+                          <Step.Content>
+                            <Step.Title>Create your account</Step.Title>
+                            {/* <Step.Description>Choose your shipping options</Step.Description> */}
+                          </Step.Content>
+                        </Step>
+
+                        <Step disabled>
+                          <Step.Content>
+                            <Step.Title>Create a project</Step.Title>
+                          </Step.Content>
+                        </Step>
+                      </Step.Group>
+
+                      <div>
+                        {kit.company()}
+                      </div>
+                      <Message
+                        info
+                        header='Is my company already registered?'
+                        list={[
+                          'If your company is already registred under a Business plan, please do register using the Business form',
+                        ]}
+                      />
+                      <br />
+                      <div>
+                        {kit.email()}
+                      </div>
+                      <br />
+                      <div>
+                        {kit.firstname()}
+                      </div>
+                      <br />
+                      <div>
+                        {kit.lastname()}
+                      </div>
+                      <p>
+                        <input type="submit" value="Save" className="ui button" />
+                      </p>
+                    </form>
+                  )
+                }
+              }
+            </Frontier>
+          </div>
+        </div>
+      </div >
+    );
+  })
+  .add('Custom UI-kit component', () => {
     const mutation = gql`
-      mutation ($name: String!) {
-        createCat(name: $name) {
+      mutation ($rating: Int!, $comment: String!) {
+        createFeedback(rating: $rating, comment: $comment) {
           id
-          name
         }
       }
     `;
 
-    // https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg
     const client = new ApolloClient({
       link: createHttpLink({ uri: 'https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg' }),
       cache: new InMemoryCache()
     });
 
     return (
-      <Frontier mutation={mutation} client={client} uiKit={SemanticUIkit} initialValues={{ name: 'My cat' }}>
-        {
-          ({ state, modifiers, form, kit }) => {
-            console.log('state', JSON.stringify(state));
-            console.log('kit', kit);
-            console.log('modifiers', modifiers);
-            return (
-              <form onSubmit={(e) => { e.preventDefault(); form.submit(); }}>
-                <h2>Create a cat</h2>
-                <div>
-                  {kit.name()}
-                </div>
-                <br />
-                <p>
-                  <input type="submit" value="Save" className="ui button" />
-                </p>
-              </form>
-            )
-          }
-        }
-      </Frontier>
-    )
-  });
+      <div>
+        <div style={{ paddingLeft: '50px' }}>
+          <div style={{ width: '445px' }}>
+            <Frontier client={client} mutation={mutation} uiKit={SemanticUIkit} />
+          </div>
+        </div>
+      </div>
+    );
+  })
+  .add('User form with email constraints', () => {
+    return <div />;
+  })
+
+// storiesOf('<Frontier> Schema options', module)
+//   .add('with a static schema using `schema` props', () => {
+//     const schema = {
+//       "$schema": "http://json-schema.org/draft-06/schema#",
+//       "properties": {
+//         "Query": {
+//           "type": "object",
+//           "properties": {
+//             "todo": {
+//               "type": "object",
+//               "properties": {
+//                 "return": {
+//                   "$ref": "#/definitions/Todo"
+//                 },
+//                 "arguments": {
+//                   "type": "object",
+//                   "properties": {
+//                     "id": {
+//                       "type": "string"
+//                     }
+//                   },
+//                   "required": [
+//                     "id"
+//                   ]
+//                 }
+//               },
+//               "required": []
+//             },
+//             "todos": {
+//               "type": "object",
+//               "properties": {
+//                 "return": {
+//                   "type": "array",
+//                   "items": {
+//                     "$ref": "#/definitions/Todo"
+//                   }
+//                 },
+//                 "arguments": {
+//                   "type": "object",
+//                   "properties": {},
+//                   "required": []
+//                 }
+//               },
+//               "required": []
+//             }
+//           },
+//           "required": []
+//         },
+//         "Mutation": {
+//           "type": "object",
+//           "properties": {
+//             "update_todo": {
+//               "type": "object",
+//               "properties": {
+//                 "return": {
+//                   "$ref": "#/definitions/Todo"
+//                 },
+//                 "arguments": {
+//                   "type": "object",
+//                   "properties": {
+//                     "id": {
+//                       "type": "string"
+//                     },
+//                     "todo": {
+//                       "$ref": "#/definitions/TodoInputType"
+//                     }
+//                   },
+//                   "required": [
+//                     "id",
+//                     "todo"
+//                   ]
+//                 }
+//               },
+//               "required": []
+//             },
+//             "create_todo": {
+//               "type": "object",
+//               "properties": {
+//                 "return": {
+//                   "$ref": "#/definitions/Todo"
+//                 },
+//                 "arguments": {
+//                   "type": "object",
+//                   "properties": {
+//                     "todo": {
+//                       "$ref": "#/definitions/TodoInputType"
+//                     }
+//                   },
+//                   "required": [
+//                     "todo"
+//                   ]
+//                 }
+//               },
+//               "required": []
+//             },
+//             "update_online_status": {
+//               "type": "object",
+//               "properties": {
+//                 "return": {
+//                   "$ref": "#/definitions/OnlineStatus"
+//                 },
+//                 "arguments": {}
+//               },
+//               "required": []
+//             }
+//           },
+//           "required": []
+//         }
+//       },
+//       "definitions": {
+//         "Todo": {
+//           "type": "object",
+//           "properties": {
+//             "id": {
+//               "type": "string"
+//             },
+//             "name": {
+//               "type": "string"
+//             },
+//             "completed": {
+//               "type": "boolean"
+//             }
+//           },
+//           "required": [
+//             "id",
+//             "name"
+//           ]
+//         },
+//         "TodoInputType": {
+//           "type": "object",
+//           "properties": {
+//             "name": {
+//               "type": "string"
+//             },
+//             "completed": {
+//               "type": "boolean"
+//             }
+//           },
+//           "required": [
+//             "name"
+//           ]
+//         },
+//         "OnlineStatus": {
+//           "type": "object",
+//           "properties": {
+//             "onlineStatus": {
+//               "type": "string"
+//             }
+//           },
+//           "required": [
+//             "onlineStatus"
+//           ]
+//         }
+//       }
+//     };
+
+//     const mutation = gql`
+//         mutation createTodo($todo: TodoInputType!) {
+//           create_todo(todo: $todo) {
+//             id
+//           }
+//         }
+//     `;
+
+//     return (
+//       <Frontier mutation={mutation} schema={schema} initialValues={{ todo: { name: 'Todo 1' } }}>
+//         {
+//           ({ state, modifiers, form }) => {
+//             console.log(state);
+//             console.log(modifiers);
+//             return (
+//               <form /* onSubmit={modifiers.save} */>
+//                 <h2>Create a todo</h2>
+//                 <p>
+//                   <label htmlFor="name">Name*</label> <br />
+//                   <input
+//                     type="text"
+//                     name="name"
+//                     value={state.values.todo.name} onChange={e => modifiers.todo.name.change(e.currentTarget.value.length > 0 ? e.currentTarget.value : null)}
+//                   />
+//                   <p>
+//                     Value: "{state.values.todo.name}"
+//                   </p>
+//                   {state.errors.todo && state.errors.todo.name &&
+//                     <p>
+//                       Error: "{state.errors.todo.name}"
+//                   </p>
+//                   }
+//                 </p>
+//                 <p>
+//                   <input type="submit" value="Save" />
+//                 </p>
+//               </form>
+//             )
+//           }
+//         }
+//       </Frontier>
+//     )
+//   }).
+//   add('with a dynamic remote schema using `client` props', () => {
+//     const mutation = gql`
+//       mutation ($name: String!) {
+//         createCat(name: $name) {
+//           id
+//           name
+//         }
+//       }
+//     `;
+
+//     const client = new ApolloClient({
+//       link: createHttpLink({ uri: 'https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg' }),
+//       cache: new InMemoryCache()
+//     });
+
+//     return (
+//       <Frontier mutation={mutation} client={client} initialValues={{ name: 'My cat' }}>
+//         {
+//           ({ state, modifiers, form }) => {
+//             console.log('state', JSON.stringify(state));
+//             console.log('modifiers', JSON.stringify(modifiers));
+//             return (
+//               <form onSubmit={(e) => { e.preventDefault(); form.submit(); }}>
+//                 <h2>Create a cat</h2>
+//                 <div>
+//                   <label htmlFor="name">Name*</label> <br />
+//                   <input
+//                     type="text"
+//                     name="name"
+//                     value={state.values.name} onChange={e => modifiers.name.change(e.currentTarget.value.length > 0 ? e.currentTarget.value : null)}
+//                   />
+//                   <p>
+//                     Value: "{state.values.name}"
+//                   </p>
+//                   {state.errors.name &&
+//                     <p>
+//                       Error: "{state.errors.name}"
+//                   </p>
+//                   }
+//                 </div>
+//                 <br />
+//                 <p>
+//                   <input type="submit" value="Save" />
+//                 </p>
+//               </form>
+//             )
+//           }
+//         }
+//       </Frontier>
+//     )
+//   })
+
+// storiesOf('<Frontier> UI-kit options', module).
+//   add('with full UI-kit rendering', () => {
+//     const mutation = gql`
+//       mutation ($name: String!) {
+//         createCat(name: $name) {
+//           id
+//           name
+//         }
+//       }
+//     `;
+
+//     // https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg
+//     const client = new ApolloClient({
+//       link: createHttpLink({ uri: 'https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg' }),
+//       cache: new InMemoryCache()
+//     });
+
+//     return (
+//       <Frontier mutation={mutation} client={client} uiKit={SemanticUIkit} initialValues={{ name: 'My cat' }} />
+//     )
+//   }).
+//   add('with render props', () => {
+//     const mutation = gql`
+//       mutation ($name: String!) {
+//         createCat(name: $name) {
+//           id
+//           name
+//         }
+//       }
+//     `;
+
+//     // https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg
+//     const client = new ApolloClient({
+//       link: createHttpLink({ uri: 'https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg' }),
+//       cache: new InMemoryCache()
+//     });
+
+//     return (
+//       <Frontier mutation={mutation} client={client} uiKit={SemanticUIkit} initialValues={{ name: 'My cat' }}>
+//         {
+//           ({ state, modifiers, form, kit }) => {
+//             console.log('state', JSON.stringify(state));
+//             console.log('kit', kit);
+//             console.log('modifiers', modifiers);
+//             return (
+//               <form onSubmit={(e) => { e.preventDefault(); form.submit(); }}>
+//                 <h2>Create a cat</h2>
+//                 <div>
+//                   {kit.name()}
+//                 </div>
+//                 <br />
+//                 <p>
+//                   <input type="submit" value="Save" className="ui button" />
+//                 </p>
+//               </form>
+//             )
+//           }
+//         }
+//       </Frontier>
+//     )
+//   });
+
+//   // TODO: advanced validations, advanced forms (steps, etc)

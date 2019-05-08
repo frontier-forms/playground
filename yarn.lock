@@ -3548,6 +3548,12 @@ functional-json-schema@0.0.2-3:
   dependencies:
     lodash "^4.17.10"
 
+functional-json-schema@^0.0.2-1:
+  version "0.0.2-1"
+  resolved "https://registry.yarnpkg.com/functional-json-schema/-/functional-json-schema-0.0.2-1.tgz#caf47817b6c475970e52db7bb2dd2668242a21d1"
+  dependencies:
+    lodash "^4.17.10"
+
 fuzzy-search@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/fuzzy-search/-/fuzzy-search-3.0.1.tgz#14a4964508a9607d6e9a88818e7ff634108260b6"
