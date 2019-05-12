@@ -42,7 +42,16 @@ class MutationSelector extends React.Component {
         <br />
         <div style={{ paddingLeft: '50px' }}>
           <div style={{ width: '300px' }}>
-            <Frontier client={this.props.client} mutation={this.props.mutations[this.state.mutation]} uiKit={this.props.uiKit} />
+            <Frontier
+              client={this.props.client}
+              mutation={this.props.mutations[this.state.mutation]}
+              uiKit={this.props.uiKit}
+              order={
+                this.state.mutation == 'createUser' ?
+                  ['email'] :
+                  undefined
+              }
+            />
           </div>
         </div>
       </div>
