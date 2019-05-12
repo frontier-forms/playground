@@ -178,7 +178,12 @@ storiesOf('React Europe 2019 demo', module)
       <div>
         <div style={{ paddingLeft: '50px' }}>
           <div style={{ width: '445px' }}>
-            <Frontier client={client} mutation={mutation} uiKit={SemanticUIkit} />
+            <Frontier
+              resetOnSave={true}
+              client={client}
+              mutation={mutation}
+              uiKit={SemanticUIkit}
+            />
           </div>
         </div>
       </div>
