@@ -69,9 +69,9 @@ storiesOf('React Europe 2019 demo', module)
         }
       }
     `,
-      'createCat': gql`
+      'createContestCat': gql`
       mutation ($name: String!) {
-        createCat(name: $name) {
+        createContestCat(name: $name) {
           id
           name
         }
@@ -200,4 +200,56 @@ storiesOf('React Europe 2019 demo', module)
   })
   .add('User form with email constraints', () => {
     return <div />;
+  })
+  .add('Array support', () => {
+    const mutation = gql`
+      mutation ($firstname: String!, $lastname: String!, $cats: [CatContestRegistercatsCat!]!) {
+        createCatContestRegister(firstname: $firstname, lastname: $lastname, cats: $cats) {
+          id
+        }
+      }
+    `;
+
+    const client = new ApolloClient({
+      link: createHttpLink({ uri: 'https://api.graph.cool/simple/v1/cj1g3qeupseze0109blq0g4mg' }),
+      cache: new InMemoryCache()
+    });
+
+    return (
+      <div>
+        <h2>Cat contest - Register</h2>
+        <Frontier
+          client={client}
+          mutation={mutation}
+          uiKit={SemanticUIkit}
+        >
+          {
+            ({ form, kit }) => {
+              return (
+                <form
+                  className={form.getState().submitting ? 'ui form loading' : 'ui form'}
+                  onSubmit={(e) => { e.preventDefault(); form.submit(); }}
+                >
+                  <p>&nbsp;</p>
+                  <div>
+                    {kit.firstname()}
+                  </div>
+                  <br />
+                  <div>
+                    {kit.lastname()}
+                  </div>
+                  <br />
+                  <div>
+                    {kit.cats({ list: [{ name: 'Cat 1' }, { name: 'Cat 2' }] })}
+                  </div>
+                  <p>
+                    <input type="submit" value="Save" className="ui button" />
+                  </p>
+                </form>
+              )
+            }
+          }
+        </Frontier>
+      </div>
+    );
   })
